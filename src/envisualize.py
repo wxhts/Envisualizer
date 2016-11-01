@@ -1,11 +1,12 @@
 from __future__ import division
 from itertools import product
 import pandas as pd
+from createControls import createControls
 
 
 class EnVisualize:
     # Methods to calculate 1536-well plate statistics such as HPE and ZPE percent CVs, signal to background ratio,
-    # and Z-prime from Envision plate reader data. Input "plate" should be a pandas Dataframe with row(1 - 32) and
+    # and Z-prime from Envision plate reader data. Input "plate" should be a pandas DataFrame with row(1 - 32) and
     # column(1-48) indexes.
 
     def __init__(self, plate):
