@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def createWellIndex(file_path):
+def createWellIndex(file_path, reverse_row=False):
 
     df = pd.read_csv(file_path)
     wells = pd.Series(df['Well'])
@@ -37,9 +37,12 @@ def createWellIndex(file_path):
         rownums.append(n)
 
     # Add lists as new columns to dataframe
-    reversedRows = [(x * -1) for x in rownums]
-    df['Column'] = colnum
     df['Row'] = rownums
-    df['Reverse Row'] = reversedRows
+    df['Column'] = colnum
+
+    if reverse_row:
+        reversedRows = [(x * -1) for x in rownums]
+        df['Reverse Row'] = reversedRows
+        return df
 
     return df
