@@ -2,6 +2,7 @@ from __future__ import division
 from itertools import product
 import pandas as pd
 from createControls import createControls
+from createWellIndex import createWellIndex
 
 
 class EnVisualize(object):
@@ -9,7 +10,7 @@ class EnVisualize(object):
     # and Z-prime from Envision plate reader data. Input "plate" should be a pandas DataFrame with row(1 - 32) and
     # column(1-48) indexes.
 
-    def __init__(self, plate, compounds_path, controls_path, control_inh=False):
+    def __init__(self, plate, controls_path, control_inh=False):
 
         self.control_inh = control_inh
         self.plate = plate
@@ -17,10 +18,9 @@ class EnVisualize(object):
         self.avg_zpe = 0
         self.std_hpe = 0
         self.std_zpe = 0
-        self.compounds = pd.read_csv(compounds_path)    # Indexed compound file
 
         if self.control_inh:
-            self.controls = createControls(controls_path,standards=True)
+            self.controls = createControls(controls_path, standards=True)
         else:
             self.controls = createControls(controls_path)
 
@@ -102,19 +102,18 @@ class EnVisualize(object):
 
         pass
 
-    def compoundAdder(self, compound_barcode):
+    def compoundAdder(self, compounds_path, compound_barcode):
         """Join the Client_ID to each assay plate using a reference file of compound positions"""
 
-        compound_plate = self.compounds[(self.compounds['Barcode'] == compound_barcode)]
+        compounds = pd.read_csv(compounds_path)         # Indexed compound file
+
+        compound_plate = compounds[(compounds['Barcode'] == compound_barcode)]
         self.plate = pd.merge(self.plate, compound_plate, left_on=['Row', 'Column'], right_on=['Row', 'Column'])
 
         return self.plate
 
 
 class EnVisualize1536(EnVisualize):
-
-    def __init__(self):
-        EnVisualize.__init__(self, plate, compounds_path, controls_path, control_inh=False)
 
     def percentInhibition(self):
         """Calculates the percent inhibition for each well in the sample region of the plate and returns with values
@@ -143,9 +142,6 @@ class EnVisualize1536(EnVisualize):
 
 
 class EnVisualize384(EnVisualize):
-
-    def __init__(self):
-        EnVisualize.__init__(self, plate, compounds_path, controls_path, control_inh=False)
 
     def percentInhibition(self):
         """Calculates the percent inhibition for each well in the sample region of the plate and returns with values
