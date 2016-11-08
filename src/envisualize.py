@@ -1,8 +1,8 @@
 from __future__ import division
 from itertools import product
 import pandas as pd
+import numpy as np
 from createControls import createControls
-from createWellIndex import createWellIndex
 
 
 class EnVisualize(object):
@@ -36,8 +36,9 @@ class EnVisualize(object):
         series_results = pd.Series(smushed_area['Result'])
         return series_results
 
-    def CV(self, region):
+    def CV(self, region, outlier=False):
         """Calculates percent CV of HPE and ZPE plate regions"""
+        # Kind of confusing, uses mean and std methods from both pandas and numpy (however, pandas relies on numpy)
 
         region = region.lower()
         if region == 'hpe':
@@ -45,22 +46,48 @@ class EnVisualize(object):
             hpe_controls = self.controls[0]
             hpe_results = self.__control_results(hpe_controls)
 
-            self.avg_hpe = hpe_results.mean()
-            self.std_hpe = hpe_results.std()
+            if outlier:
+                avg_hpe = hpe_results.mean()
+                std_hpe = hpe_results.std()
+                high_thresh = avg_hpe + (3 * std_hpe)
+                low_thresh = avg_hpe - (3 * std_hpe)
 
-            percentHPECV = round(100*(self.std_hpe/self.avg_hpe), 2)
-            return percentHPECV
+                filtered_hpe = [i for i in hpe_results if low_thresh < i < high_thresh]
+
+                self.avg_hpe = np.mean(filtered_hpe)
+                self.std_hpe = np.std(filtered_hpe)
+                percentHPECV = round(100 * (self.std_hpe / self.avg_hpe), 2)
+                return percentHPECV
+            else:
+                self.avg_hpe = hpe_results.mean()
+                self.std_hpe = hpe_results.std()
+
+                percentHPECV = round(100*(self.std_hpe/self.avg_hpe), 2)
+                return percentHPECV
 
         elif region == 'zpe':
 
             zpe_controls = self.controls[1]
             zpe_results = self.__control_results(zpe_controls)
 
-            self.avg_zpe = zpe_results.mean()
-            self.std_zpe = zpe_results.std()
+            if outlier:
+                avg_zpe = zpe_results.mean()
+                std_zpe = zpe_results.std()
+                high_thresh = avg_zpe + (3 * std_zpe)
+                low_thresh = avg_zpe - (3 * std_zpe)
 
-            percentZPECV = round(100*(self.std_zpe/self.avg_zpe), 2)
-            return percentZPECV
+                filtered_zpe = [i for i in zpe_results if low_thresh < i < high_thresh]
+
+                self.avg_zpe = np.mean(filtered_zpe)
+                self.std_zpe = np.std(filtered_zpe)
+                percentZPECV = round(100 * (self.std_zpe / self.avg_zpe), 2)
+                return percentZPECV
+            else:
+                self.avg_zpe = zpe_results.mean()
+                self.std_zpe = zpe_results.std()
+
+                percentZPECV = round(100 * (self.std_zpe / self.avg_zpe), 2)
+                return percentZPECV
 
     def signalToBackground(self):
         """Calculates the signal to background ratio of the plate"""
