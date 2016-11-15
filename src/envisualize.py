@@ -122,12 +122,38 @@ class EnVisualize(object):
         else:
             pass
 
-    def percentInhibition(self):
+    def percentInhibition(self, size):
         """Calculates the percent inhibition for each well in the sample region of the plate and returns with values
-        already added to self.plate DataFrame
-        IMPLEMENT IN SUBCLASSES"""
+        already added to self.plate Dataframe"""
 
-        pass
+        pd.set_option('mode.chained_assignment', None)  # Silences pandas SettingWithCopy warning
+
+        samplesX = 0
+        samplesY = 0
+
+        if size == 384:
+            samplesX = xrange(1, 17)
+            samplesY = xrange(3, 23)
+        elif size == 1536:
+            samplesX = xrange(1, 33)
+            samplesY = xrange(5, 45)
+
+        rawData = []
+        for x, y in product(samplesX, samplesY):
+            result = self.plate[(self.plate['Row'] == x) & (self.plate['Column'] == y)]
+            rawData.append(result)
+
+        samples = pd.concat(rawData)
+        samplesSeries = pd.Series(samples['Result'], index=samples.index)
+
+        inhibs = []
+        for i in samplesSeries:
+            percentInhib = round(100 - (100 * ((i - self.avg_hpe) / (self.avg_zpe - self.avg_hpe))), 2)
+            inhibs.append((percentInhib))
+
+        self.plate['Percent Inhibition'] = pd.Series(inhibs, index=samplesSeries.index)
+        self.plate['Region'] = 'Sample'
+        return self.plate
 
     def compoundAdder(self, compounds_path, compound_barcode):
         """Join the Client_ID to each assay plate using a reference file of compound positions"""
@@ -137,60 +163,4 @@ class EnVisualize(object):
         compound_plate = compounds[(compounds['Barcode'] == compound_barcode)]
         self.plate = pd.merge(self.plate, compound_plate, left_on=['Row', 'Column'], right_on=['Row', 'Column'])
 
-        return self.plate
-
-
-class EnVisualize1536(EnVisualize):
-
-    def percentInhibition(self):
-        """Calculates the percent inhibition for each well in the sample region of the plate and returns with values
-        already added to self.plate Dataframe"""
-
-        pd.set_option('mode.chained_assignment', None)  # Silences pandas SettingWithCopy warning
-
-        samplesX = range(1, 33)
-        samplesY = range(5, 45)
-
-        rawData = []
-        for x, y in product(samplesX, samplesY):
-            result = self.plate[(self.plate['Row'] == x) & (self.plate['Column'] == y)]
-            rawData.append(result)
-
-        samples = pd.concat(rawData)
-        samplesSeries = pd.Series(samples['Result'], index=samples.index)
-
-        inhibs = []
-        for i in samplesSeries:
-            percentInhib = round(100 - (100 * ((i - self.avg_hpe)/(self.avg_zpe - self.avg_hpe))), 2)
-            inhibs.append((percentInhib))
-
-        self.plate['Percent Inhibition'] = pd.Series(inhibs, index=samplesSeries.index)
-        return self.plate
-
-
-class EnVisualize384(EnVisualize):
-
-    def percentInhibition(self):
-        """Calculates the percent inhibition for each well in the sample region of the plate and returns with values
-        already added to self.plate Dataframe"""
-
-        pd.set_option('mode.chained_assignment', None)  # Silences pandas SettingWithCopy warning
-
-        samplesX = range(1, 17)
-        samplesY = range(3, 23)
-
-        rawData = []
-        for x, y in product(samplesX, samplesY):
-            result = self.plate[(self.plate['Row'] == x) & (self.plate['Column'] == y)]
-            rawData.append(result)
-
-        samples = pd.concat(rawData)
-        samplesSeries = pd.Series(samples['Result'], index=samples.index)
-
-        inhibs = []
-        for i in samplesSeries:
-            percentInhib = round(100 - (100 * ((i - self.avg_hpe)/(self.avg_zpe - self.avg_hpe))), 2)
-            inhibs.append((percentInhib))
-
-        self.plate['Percent Inhibition'] = pd.Series(inhibs, index=samplesSeries.index)
         return self.plate
