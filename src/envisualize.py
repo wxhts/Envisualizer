@@ -117,7 +117,7 @@ class EnVisualize(object):
                 percent_INH = round(100 - (100 * ((i - self.avg_hpe)/(self.avg_zpe - self.avg_hpe))), 2)
                 perc_INH.append(percent_INH)
 
-            controlMean = np.mean(perc_INH)
+            controlMean = round(np.mean(perc_INH), 2)
             return controlMean
         else:
             pass

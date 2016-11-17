@@ -59,3 +59,26 @@ def test_zPrime():
     env_obj.CV('zpe')
 
     assert 0 <= env_obj.zPrime() <= 1
+
+
+def test_inhibitorControl():
+    from createWellIndex import createWellIndex
+    from envisualize import EnVisualize
+
+    indexed = createWellIndex('envision.csv')
+    env_obj = EnVisualize(indexed, 'controltest.csv', control_inh=True)
+    env_obj.CV('hpe')
+    env_obj.CV('zpe')
+
+    assert 3 <= env_obj.inhibitorControl() <= 4
+
+
+def test_percentInhibition():
+    from createWellIndex import createWellIndex
+    from envisualize import EnVisualize
+
+    indexed = createWellIndex('envision.csv')
+    env_obj = EnVisualize(indexed, 'controltest.csv')
+    env_obj.CV('hpe')
+    env_obj.CV('zpe')
+
