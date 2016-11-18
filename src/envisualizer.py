@@ -1,18 +1,19 @@
 import csv
-from bokeh.charts import HeatMap, output_file, show
-from bokeh.io import gridplot
-from bokeh.palettes import RdYlBu5
+#from bokeh.charts import HeatMap, output_file, show
+#from bokeh.io import gridplot
+#from bokeh.palettes import RdYlBu5
 import pandas as pd
 from createWellIndex import createWellIndex
 from envisualize import EnVisualize
 
-
+'''
 def tuplize(alist):
     """Generates a list of 2-element lists"""
     tuped = []
     for i in range(0, len(alist), 2):
         tuped.append([alist[i], alist[i+1]])
     return tuped
+'''
 
 input_file = raw_input('Please enter the PATH of the input file: ')
 log_file = raw_input('Please enter the PATH of the log file: ')
@@ -20,7 +21,7 @@ project_code = raw_input('Please enter your project code: ')
 project_date = raw_input('Please enter the date: ')
 stats_output = raw_input('Please enter the PATH of the plate statistics file: ')
 inhibitions_output = raw_input('Please enter the PATH of the percent inhibitions file: ')
-viz_output = raw_input('Please enter the PATH of the visualization file: ')
+#viz_output = raw_input('Please enter the PATH of the visualization file: ')
 
 plate_stats = open(stats_output + ' ' + project_code + ' ' + project_date + '.csv', 'wb')
 csvwriter = csv.writer(plate_stats)
@@ -38,19 +39,21 @@ for plate1 in log.itertuples():
     assayplate = plate1[1]
     compoundplate = plate1[2]
     subset = collection[(collection['Barcode'] == assayplate)]
-    workit = EnVisualize(subset)
+    workit = EnVisualize(subset, 'controltest_escape.csv')
 
-    stats = [assayplate, workit.CV('hpe'), workit.CV('zpe'), workit.zPrime(), workit.signalToBackground()]
+    stats = [assayplate, workit.CV('hpe', outlier=True), workit.CV('zpe', outlier=True), workit.zPrime(),
+             workit.signalToBackground()]
     csvwriter.writerow(stats)
 
-    workit.percentInhibition()
-    compound_add = workit.compoundAdder(compoundplate)
+    workit.percentInhibition(1536)
+    compound_add = workit.compoundAdder('~\Desktop\DestinationsIndexed.csv', compoundplate)
     list_inhibitions.append(compound_add)
 
 all_inhibitions = pd.concat(list_inhibitions)
 all_inhibitions.to_csv(inhibitions_output + ' ' + project_code + ' ' + project_date + '.csv', index=False)
+plate_stats.close()
 
-
+'''
 # Generate HeatMap visualizations using Bokeh library for each plate in percent inhibitions Dataframe.
 output_file(viz_output + ' ' + project_code + ' ' + project_date + '.html')
 graphs = []
@@ -62,3 +65,4 @@ for plate2 in barcodes:
 arranged_graphs = tuplize(graphs)
 visualization = gridplot(arranged_graphs)
 show(visualization)
+'''
