@@ -149,9 +149,42 @@ class EnVisualize(object):
         inhibs = []
         for i in samplesSeries:
             percentInhib = round(100 - (100 * ((i - self.avg_hpe) / (self.avg_zpe - self.avg_hpe))), 2)
-            inhibs.append((percentInhib))
+            inhibs.append(percentInhib)
 
         self.plate['Percent Inhibition'] = pd.Series(inhibs, index=samplesSeries.index)
+        self.plate['Region'] = 'Sample'
+        return self.plate
+
+    def percentOverBasal(self, size):
+        """Calculates the percent inhibition for each well in the sample region of the plate and returns with values
+        already added to self.plate Dataframe"""
+
+        pd.set_option('mode.chained_assignment', None)  # Silences pandas SettingWithCopy warning
+
+        samplesX = 0
+        samplesY = 0
+
+        if size == 384:
+            samplesX = xrange(1, 17)
+            samplesY = xrange(3, 23)
+        elif size == 1536:
+            samplesX = xrange(1, 33)
+            samplesY = xrange(5, 45)
+
+        rawData = []
+        for x, y in product(samplesX, samplesY):
+            result = self.plate[(self.plate['Row'] == x) & (self.plate['Column'] == y)]
+            rawData.append(result)
+
+        samples = pd.concat(rawData)
+        samplesSeries = pd.Series(samples['Result'], index=samples.index)
+
+        over_basals = []
+        for i in samplesSeries:
+            percentBasals = round(100 - (100 * (i / self.avg_zpe)), 2)
+            over_basals.append(percentBasals)
+
+        self.plate['Percent Over Basal'] = pd.Series(over_basals, index=samplesSeries.index)
         self.plate['Region'] = 'Sample'
         return self.plate
 

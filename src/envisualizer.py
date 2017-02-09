@@ -39,15 +39,18 @@ for plate1 in log.itertuples():
     assayplate = plate1[1]
     compoundplate = plate1[2]
     subset = collection[(collection['Barcode'] == assayplate)]
-    workit = EnVisualize(subset, 'controltest_escape.csv')
+    workit = EnVisualize(subset, '~\Desktop\controltest.csv')
 
-    stats = [assayplate, workit.CV('hpe', outlier=True), workit.CV('zpe', outlier=True), workit.zPrime(),
-             workit.signalToBackground()]
+    stats = [assayplate, workit.CV('hpe', outlier=True), workit.CV('zpe', outlier=True), workit.zPrime(), workit.signalToBackground()]
     csvwriter.writerow(stats)
 
+    #workit.percentOverBasal(1536)
+    #compound_add = workit.compoundAdder('~\Desktop\HeptaresIndexed.csv', compoundplate)
+    #list_inhibitions.append(compound_add)
+
     workit.percentInhibition(1536)
-    compound_add = workit.compoundAdder('~\Desktop\DestinationsIndexed.csv', compoundplate)
-    list_inhibitions.append(compound_add)
+    #compound_add = workit.compoundAdder('~\Desktop\DestinationsIndexed.csv', compoundplate)
+    #list_inhibitions.append(compound_add)
 
 all_inhibitions = pd.concat(list_inhibitions)
 all_inhibitions.to_csv(inhibitions_output + ' ' + project_code + ' ' + project_date + '.csv', index=False)
